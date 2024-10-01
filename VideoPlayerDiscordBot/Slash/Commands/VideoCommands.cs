@@ -17,41 +17,29 @@ namespace VideoPlayerDiscordBot.Slash.Commands
             string args = (string)command.Data.Options.ToArray()[0];
             Console.WriteLine(args);
 
-            // Start a new process to run ffmpeg
-            Process ffmpegProcess = new();
-            ffmpegProcess.StartInfo.FileName = "mpv"; // Since ffmpeg is in the PATH, you don't need to specify the full path
-            ffmpegProcess.StartInfo.Arguments = args;
+            Process mpvprocess = new();
+            mpvprocess.StartInfo.FileName = "mpv"; 
+            mpvprocess.StartInfo.Arguments = args;
 
             // Redirect the standard output and error so you can capture or log them
-            ffmpegProcess.StartInfo.RedirectStandardOutput = true;
-            ffmpegProcess.StartInfo.RedirectStandardError = true;
-            ffmpegProcess.StartInfo.UseShellExecute = false;
-            ffmpegProcess.StartInfo.CreateNoWindow = true; // Don't show a command prompt window
+            //mpvprocess.StartInfo.RedirectStandardOutput = true;
+            //mpvprocess.StartInfo.RedirectStandardError = true;
+            mpvprocess.StartInfo.UseShellExecute = false;
+            mpvprocess.StartInfo.CreateNoWindow = true; // Don't show a command prompt window
 
             // Subscribe to output and error data events if needed (optional)
-            ffmpegProcess.OutputDataReceived += (sender, e) => Console.WriteLine(e.Data);
-            ffmpegProcess.ErrorDataReceived += (sender, e) => Console.WriteLine(e.Data);
+            mpvprocess.OutputDataReceived += (sender, e) => Console.WriteLine(e.Data);
+            mpvprocess.ErrorDataReceived += (sender, e) => Console.WriteLine(e.Data);
 
             try
             {
-                // Start the ffmpeg process
-                ffmpegProcess.Start();
-                await command.RespondAsync();
+  
+                mpvprocess.Start();
+                await command.RespondAsync("Video started");
 
-                // Begin reading the output and error streams asynchronously
-                ffmpegProcess.BeginOutputReadLine();
-                ffmpegProcess.BeginErrorReadLine();
-
-                // Wait for the process to exit
-                ffmpegProcess.WaitForExit();
-
-                // Optionally, check the exit code
-                int exitCode = ffmpegProcess.ExitCode;
-                Console.WriteLine($"mpv exited with code {exitCode}");
             }
             catch (Exception ex)
             {
-                // Handle exceptions
                 Console.WriteLine($"An error occurred: {ex.Message}");
             }
         }

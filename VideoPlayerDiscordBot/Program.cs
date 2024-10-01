@@ -8,10 +8,10 @@ using VideoPlayerDiscordBot.Slash.Commands;
 
 public class Program
 {
-    private ISlashBuilder _slashBuilder;
-    private DiscordSocketClient _client;
-    private CommandService _commands;
-    private IServiceProvider _services;
+    private ISlashBuilder? _slashBuilder;
+    private DiscordSocketClient? _client;
+    private CommandService? _commands;
+    private IServiceProvider? _services;
 
     public static void Main(string[] args)
     {
@@ -69,6 +69,10 @@ public class Program
 
     public async Task RegisterCommandsAsync(DiscordSocketClient client, CommandService commands)
     {
+        if(_slashBuilder == null)
+        {
+            throw new Exception("Slash builder is null");
+        }
         client.Ready += _slashBuilder.Client_Ready;
         client.SlashCommandExecuted += _slashBuilder.SlashCommandHandler;
 
