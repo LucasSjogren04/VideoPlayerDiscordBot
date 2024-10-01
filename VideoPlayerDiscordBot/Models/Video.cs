@@ -9,6 +9,7 @@ namespace VideoPlayerDiscordBot.Models
     public class Video
     {
         public required string Id { get; set; }
+        public required string Location { get; set; }
         public bool Downloaded { get; set; }
     }
 }

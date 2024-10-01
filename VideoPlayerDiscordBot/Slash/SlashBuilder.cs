@@ -33,7 +33,7 @@ namespace VideoPlayerDiscordBot.Slash
 
         public async Task Client_Ready()
         {
-            ulong guidid = 1290233992695648287;
+            ulong guidid = 1250182830701412384;
             //var guild = client.GetGuild(1250182830701412384);
             //var guildCommand = new SlashCommandBuilder()
             //   .WithName("a")

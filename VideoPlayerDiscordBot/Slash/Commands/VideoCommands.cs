@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace VideoPlayerDiscordBot.Slash.Commands
@@ -13,28 +14,43 @@ namespace VideoPlayerDiscordBot.Slash.Commands
 
         public async Task AddVideo(SocketSlashCommand command)
         {
-            // Define the arguments for ffmpeg (adjust these based on your use case)
             string args = (string)command.Data.Options.ToArray()[0];
+            if(!args.Contains("youtube.com") && !args.Contains("youtu.be"))
+            {
+                await command.RespondAsync($"{args} is not a valid link.");
+            }
             Console.WriteLine(args);
+            string pattern = @"=(.*)";
 
-            Process mpvprocess = new();
-            mpvprocess.StartInfo.FileName = "mpv"; 
-            mpvprocess.StartInfo.Arguments = args;
+            Match match = Regex.Match(args, pattern);
+            if (!match.Success)
+            {
+                await command.RespondAsync($"{args} is not a valid link.");
+            }
+            string filename = match.Groups[1].Value;
+
+            string filelocation = "X:\\myapps\\botDownloads\\" + filename;
+
+
+            Process ytdlp = new();
+            ytdlp.StartInfo.FileName = "yt-dlp";
+            
+            ytdlp.StartInfo.Arguments = $"{args} -o {filelocation}";
 
             // Redirect the standard output and error so you can capture or log them
             //mpvprocess.StartInfo.RedirectStandardOutput = true;
             //mpvprocess.StartInfo.RedirectStandardError = true;
-            mpvprocess.StartInfo.UseShellExecute = false;
-            mpvprocess.StartInfo.CreateNoWindow = true; // Don't show a command prompt window
+            ytdlp.StartInfo.UseShellExecute = false;
+            ytdlp.StartInfo.CreateNoWindow = true; // Don't show a command prompt window
 
             // Subscribe to output and error data events if needed (optional)
-            mpvprocess.OutputDataReceived += (sender, e) => Console.WriteLine(e.Data);
-            mpvprocess.ErrorDataReceived += (sender, e) => Console.WriteLine(e.Data);
+            ytdlp.OutputDataReceived += (sender, e) => Console.WriteLine(e.Data);
+            ytdlp.ErrorDataReceived += (sender, e) => Console.WriteLine(e.Data);
 
             try
             {
   
-                mpvprocess.Start();
+                ytdlp.Start();
                 await command.RespondAsync("Video started");
 
             }
