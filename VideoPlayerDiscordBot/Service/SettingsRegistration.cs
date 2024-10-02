@@ -6,11 +6,9 @@ using System.Threading.Tasks;
 
 namespace VideoPlayerDiscordBot.Service
 {
-    public class DownloadService
+    public class SettingsRegistration
     {
-        public async Task<string> StartDownload()
-        {
-            return "";
-        }
+        public string? OutputDirectory { get; set; }
+        public ulong GuildId { get; set; }
     }
 }
