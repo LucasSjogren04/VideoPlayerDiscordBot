@@ -5,6 +5,8 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 using VideoPlayerDiscordBot.Slash;
 using VideoPlayerDiscordBot.Slash.Commands;
+using Newtonsoft.Json.Linq;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 public class Program
 {
@@ -15,17 +17,15 @@ public class Program
 
     public static void Main(string[] args)
     {
-        // Create an instance of the Program class
         var program = new Program();
-        // Call the instance method Main and wait for it to complete
-        program.MainAsync(args[0]).GetAwaiter().GetResult();
+        program.MainAsync().GetAwaiter().GetResult();
     }
 
-    public async Task MainAsync(string token)
+    public async Task MainAsync()
     {
 
         var services = new ServiceCollection();
-        ConfigureServices(services, token);
+        ConfigureServices(services);
 
         // Build the service provider
         _services = services.BuildServiceProvider();
@@ -33,6 +33,13 @@ public class Program
         _client = _services.GetRequiredService<DiscordSocketClient>();
 
         _slashBuilder = _services.GetRequiredService<ISlashBuilder>();
+
+        string token = RegisterSecrets();
+        if(token == "Error")
+        {
+            Console.WriteLine("Error finding token");
+            return;
+        }
 
         _client.Log += Log;
 
@@ -52,7 +59,40 @@ public class Program
         return Task.CompletedTask;
     }
 
-    private void ConfigureServices(IServiceCollection services, string token)
+    private string RegisterSecrets()
+    {
+        string filepath = AppDomain.CurrentDomain.BaseDirectory;
+        if(filepath == null)
+        {
+            Console.WriteLine("Base path not found");
+            return "Error";
+        }
+        string settingsFilePath = Path.Combine(filepath, "settings.txt");
+        if (!File.Exists(settingsFilePath))
+        {
+            Console.WriteLine("Settings file not found");
+            return "Error";
+        }
+        Console.WriteLine(settingsFilePath);
+        
+        try
+        {
+            string[] lines = File.ReadAllLines(settingsFilePath);
+            foreach (string line in lines)
+            {
+                if (line.StartsWith("token:"))
+                {
+                    return line.Split(new[] { "token:" }, StringSplitOptions.None)[1].Trim();
+                }
+            }
+        } catch(Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+        
+        return "Settings file not found";
+    }
+    private void ConfigureServices(IServiceCollection services)
     {
 
         services.AddSingleton(provider => new DiscordSocketClient(new DiscordSocketConfig
@@ -60,11 +100,9 @@ public class Program
             GatewayIntents = GatewayIntents.GuildMessages | GatewayIntents.Guilds | GatewayIntents.MessageContent 
         }));
 
-        //var commandServiceConfig = new CommandServiceConfig { DefaultRunMode = RunMode.Async };
         services.AddSingleton(new CommandService());
         services.AddSingleton<ISlashBuilder, SlashBuilder>();
         services.AddSingleton<IVideoCommands, VideoCommands>();
-        //services.AddSingleton<, GuessingCommands>();
     }
 
     public async Task RegisterCommandsAsync(DiscordSocketClient client, CommandService commands)
@@ -76,7 +114,6 @@ public class Program
         client.Ready += _slashBuilder.Client_Ready;
         client.SlashCommandExecuted += _slashBuilder.SlashCommandHandler;
 
-        // Here we discover all of the command modules in the assembly
         await commands.AddModulesAsync(Assembly.GetEntryAssembly(), _services);
     }
 
