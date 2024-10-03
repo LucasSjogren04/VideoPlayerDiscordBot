@@ -29,30 +29,23 @@ namespace VideoPlayerDiscordBot.Slash.Commands
             }
             string filename = match.Groups[1].Value;
 
-            string filelocation = "X:\\myapps\\botDownloads\\" + filename;
-
+            string filelocation = Path.Combine(Program.downloadPath ,filename);
 
             Process ytdlp = new();
             ytdlp.StartInfo.FileName = "yt-dlp";
             
             ytdlp.StartInfo.Arguments = $"{args} -o {filelocation}";
 
-            // Redirect the standard output and error so you can capture or log them
-            //mpvprocess.StartInfo.RedirectStandardOutput = true;
-            //mpvprocess.StartInfo.RedirectStandardError = true;
             ytdlp.StartInfo.UseShellExecute = false;
-            ytdlp.StartInfo.CreateNoWindow = true; // Don't show a command prompt window
+            ytdlp.StartInfo.CreateNoWindow = true; 
 
-            // Subscribe to output and error data events if needed (optional)
             ytdlp.OutputDataReceived += (sender, e) => Console.WriteLine(e.Data);
             ytdlp.ErrorDataReceived += (sender, e) => Console.WriteLine(e.Data);
 
             try
             {
-  
                 ytdlp.Start();
                 await command.RespondAsync("Video started");
-
             }
             catch (Exception ex)
             {
