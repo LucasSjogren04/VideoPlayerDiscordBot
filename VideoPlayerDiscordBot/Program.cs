@@ -18,11 +18,13 @@ namespace VideoPlayerDiscordBot
         private IServiceProvider? _services;
         public static readonly List<Setting> settings =
         [
+            new Setting {Name = "token" , Required = true, SettingValueType = "string"},
             new Setting {Name = "guildId" , Required = true, SettingValueType = "ulong"},
             new Setting {Name = "downloadPath" , Required = true, SettingValueType = "string"},
         ];
         public readonly static string[] settingLines = GetLinesInSettingFile();
-        public readonly static ulong GuildId = ulong.Parse(RegisterSetting(settings.Where(s => s.Name == "guildId").First()));
+        public readonly static ulong guildId = ulong.Parse(RegisterSetting(settings.Where(s => s.Name == "guildId").First()));
+        public readonly static string downloadPath = RegisterSetting(settings.Where(s => s.Name == "downloadPath").First());
 
         public static void Main(string[] args)
         {
@@ -41,14 +43,13 @@ namespace VideoPlayerDiscordBot
             var services = new ServiceCollection();
             ConfigureServices(services);
 
-            // Build the service provider
             _services = services.BuildServiceProvider();
 
             _client = _services.GetRequiredService<DiscordSocketClient>();
 
             _slashBuilder = _services.GetRequiredService<ISlashBuilder>();
 
-            string token = RegisterSecrets();
+            string token = RegisterSetting(settings.Where(s => s.Name == "token").First());
             if (token == "Error")
             {
                 Console.WriteLine("Error finding token");
@@ -57,7 +58,6 @@ namespace VideoPlayerDiscordBot
 
             _client.Log += Log;
 
-            // Resolve and register commands
             _commands = _services.GetRequiredService<CommandService>();
             await RegisterCommandsAsync(_client, _commands);
 
@@ -146,28 +146,6 @@ namespace VideoPlayerDiscordBot
                 Console.WriteLine(ex.Message);
                 return "Error";
             }
-        }
-        private static string RegisterSecrets()
-        {
-            string settingsFilePath = GetSettingsFilePath();
-
-            try
-            {
-                string[] lines = File.ReadAllLines(settingsFilePath);
-                foreach (string line in lines)
-                {
-                    if (line.StartsWith("token:"))
-                    {
-                        return line.Split(new[] { "token:" }, StringSplitOptions.None)[1].Trim();
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
-
-            return "Settings file not found";
         }
         private static void ConfigureServices(IServiceCollection services)
         {
