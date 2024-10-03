@@ -55,7 +55,7 @@ namespace VideoPlayerDiscordBot.Slash
                 //await guild.CreateApplicationCommandAsync(guildCommand.Build());
                 await _client.Rest.CreateGuildCommand(addvideo.Build(), guidid);
             }
-            catch (ApplicationCommandException exception)
+            catch (HttpException exception)
             {
                 var json = JsonConvert.SerializeObject(exception.Errors, Formatting.Indented);
                 Console.WriteLine(json);
