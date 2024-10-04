@@ -8,7 +8,7 @@ namespace VideoPlayerDiscordBot.Service
 {
     public class DownloadService
     {
-        public async Task<string> StartDownload()
+        public async Task<string> DownloadVideo(string path)
         {
             return "";
         }
