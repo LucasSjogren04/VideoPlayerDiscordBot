@@ -7,6 +7,7 @@ using VideoPlayerDiscordBot.Slash;
 using VideoPlayerDiscordBot.Slash.Commands;
 using VideoPlayerDiscordBot.Service;
 using VideoPlayerDiscordBot.Models;
+using Newtonsoft.Json;
 
 namespace VideoPlayerDiscordBot
 {
@@ -18,13 +19,16 @@ namespace VideoPlayerDiscordBot
         private IServiceProvider? _services;
         public static readonly List<Setting> settings =
         [
-            new Setting {Name = "token" , Required = true, SettingValueType = "string"},
             new Setting {Name = "guildId" , Required = true, SettingValueType = "ulong"},
             new Setting {Name = "downloadPath" , Required = true, SettingValueType = "string"},
+            new Setting {Name = "maxFileSize" , Required = true, SettingValueType = "int"},
         ];
+        public static ulong guildId;
+        public static string? downloadPath;
+        public static int maxFileSize;
+        private readonly Setting token = new() { Name = "token", Required = true, SettingValueType = "string" };
         public readonly static string[] settingLines = GetLinesInSettingFile();
-        public readonly static ulong guildId = ulong.Parse(RegisterSetting(settings.Where(s => s.Name == "guildId").First()));
-        public readonly static string downloadPath = RegisterSetting(settings.Where(s => s.Name == "downloadPath").First());
+
 
         public static void Main(string[] args)
         {
@@ -34,9 +38,35 @@ namespace VideoPlayerDiscordBot
 
         public async Task MainAsync()
         {
-            foreach(Setting setting in settings){
-                if(setting.Name == "Error" && setting.Required == true){
-                    return;
+            foreach(Setting setting in settings)
+            {
+                RegisterSetting(setting);
+            }
+            foreach (Setting setting in settings)
+            {
+                if(!string.IsNullOrEmpty(setting.Value) && setting.Value != "Error")
+                {
+                    switch (setting.Name)
+                    {
+                        case "guildId":
+                            guildId = ulong.Parse(setting.Value);
+                            break;
+                        case "downloadPath":
+                            downloadPath = setting.Value;
+                            break;
+                        case "maxFileSize":
+                            maxFileSize = int.Parse(setting.Value);
+                            break;
+                    }
+                }
+                else if (setting.Value == "Error" && setting.Required == true)
+                {
+                    Console.WriteLine($"{setting.Name} is a required setting, it was not set properly. Program will exit it 5 seconds...");
+                    Thread.Sleep(5000);
+                    Environment.Exit(1);
+                } else {
+                    //if setting.Value is error but setting is not required
+                    Console.WriteLine($"{setting.Name} was not provided properly, assigning it's default value");
                 }
             }
 
@@ -49,19 +79,18 @@ namespace VideoPlayerDiscordBot
 
             _slashBuilder = _services.GetRequiredService<ISlashBuilder>();
 
-            string token = RegisterSetting(settings.Where(s => s.Name == "token").First());
-            if (token == "Error")
+            RegisterSetting(token);
+            if (token.Value == null)
             {
-                Console.WriteLine("Error finding token");
+                Console.WriteLine("Invalid token");
                 return;
             }
-
             _client.Log += Log;
 
             _commands = _services.GetRequiredService<CommandService>();
             await RegisterCommandsAsync(_client, _commands);
 
-            await _client.LoginAsync(TokenType.Bot, token);
+            await _client.LoginAsync(TokenType.Bot, token.Value);
             await _client.StartAsync();
 
             await Task.Delay(-1);
@@ -100,7 +129,7 @@ namespace VideoPlayerDiscordBot
             return settingsFilePath;
         }
 
-        private static string RegisterSetting(Setting setting)
+        private static void RegisterSetting(Setting setting)
         {
             try
             {
@@ -108,15 +137,15 @@ namespace VideoPlayerDiscordBot
                 if (line == null)
                 {
                     Console.WriteLine($"{setting.Name} not found in settings.txt file.");
-                    return "Error";
+                    setting.Value = "Error";
                 }
-                if (line.StartsWith(setting.Name))
+                else if (line.StartsWith(setting.Name))
                 {
                     int lenghtPlus1 = setting.Name.Length + 1;
                     string stringValue = line[lenghtPlus1..];
                     if (setting.SettingValueType == "string")
                     {
-                        return stringValue;
+                        setting.Value = stringValue;
                     }
                     else if (setting.SettingValueType == "bool")
                     {
@@ -124,9 +153,9 @@ namespace VideoPlayerDiscordBot
                         if (!result)
                         {
                             Console.WriteLine($"Could not convert the provided {setting.Name} to variable type: {setting.SettingValueType}");
-                            return "Error";
+                            setting.Value = "Error";
                         }
-                        return stringValue;
+                        setting.Value = stringValue;
                     }
                     else if (setting.SettingValueType == "ulong")
                     {
@@ -134,17 +163,25 @@ namespace VideoPlayerDiscordBot
                         if (!result)
                         {
                             Console.WriteLine($"Could not convert the provided {setting.Name} to variable type: {setting.SettingValueType}");
-                            return "Error";
+                            setting.Value = "Error";
                         }
-                        return stringValue;
+                        setting.Value = stringValue;
+                    }
+                    else if(setting.SettingValueType == "int")
+                    {
+                        bool result = int.TryParse(stringValue, out int intValue);
+                        if (!result)
+                        {
+                            Console.WriteLine($"Could not convert the provided {setting.Name} to variable type: {setting.SettingValueType}");
+                            setting.Value = "Error";
+                        }
+                        setting.Value =  stringValue;
                     }
                 };
-                return "Error";
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                return "Error";
             }
         }
         private static void ConfigureServices(IServiceCollection services)
