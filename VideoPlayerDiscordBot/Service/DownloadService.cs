@@ -14,7 +14,7 @@ namespace VideoPlayerDiscordBot.Service
             Process ytdlp = new();
             ytdlp.StartInfo.FileName = "yt-dlp";
             
-            ytdlp.StartInfo.Arguments = $"{args} -o {path} --max-filesize {Program.maxFileSize}";
+            ytdlp.StartInfo.Arguments = $"{args} -o {path} --max-filesize {Program.maxFileSize}M";
 
             ytdlp.StartInfo.UseShellExecute = false;
             ytdlp.StartInfo.CreateNoWindow = true; 

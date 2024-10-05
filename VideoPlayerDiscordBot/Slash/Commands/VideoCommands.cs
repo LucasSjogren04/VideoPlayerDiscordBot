@@ -33,7 +33,8 @@ namespace VideoPlayerDiscordBot.Slash.Commands
 
             string filelocation = Path.Combine(Program.downloadPath ,filename);
             string result = await _downloadService.DownloadVideo(filelocation, args);
-            
+            await command.DeferAsync();
+            await command.FollowupAsync("Niahu");
             await command.RespondAsync("Video started");
             Console.WriteLine(result);
         }
