@@ -6,6 +6,7 @@ using System.Reflection;
 using VideoPlayerDiscordBot.Slash;
 using VideoPlayerDiscordBot.Slash.Commands;
 using VideoPlayerDiscordBot.Service;
+using Syroot.Windows.IO;
 using VideoPlayerDiscordBot.Models;
 using Newtonsoft.Json;
 
@@ -24,7 +25,7 @@ namespace VideoPlayerDiscordBot
             new Setting {Name = "maxFileSize" , Required = true, SettingValueType = "int"},
         ];
         public static ulong guildId;
-        public static string? downloadPath;
+        public static string downloadPath = "";
         public static int maxFileSize;
         private readonly Setting token = new() { Name = "token", Required = true, SettingValueType = "string" };
         public readonly static string[] settingLines = GetLinesInSettingFile();
@@ -67,6 +68,15 @@ namespace VideoPlayerDiscordBot
                 } else {
                     //if setting.Value is error but setting is not required
                     Console.WriteLine($"{setting.Name} was not provided properly, assigning it's default value");
+                    switch (setting.Name)
+                    {
+                        case "downloadPath":
+                            downloadPath = KnownFolders.Downloads.Path;
+                            break;
+                        case "maxFileSize":
+                            maxFileSize = 99999;
+                            break;
+                    }
                 }
             }
 
@@ -195,6 +205,7 @@ namespace VideoPlayerDiscordBot
             services.AddSingleton(new CommandService());
             services.AddSingleton<ISlashBuilder, SlashBuilder>();
             services.AddSingleton<IVideoCommands, VideoCommands>();
+            services.AddScoped<IDownloadService, DownloadService>();
         }
 
         public async Task RegisterCommandsAsync(DiscordSocketClient client, CommandService commands)

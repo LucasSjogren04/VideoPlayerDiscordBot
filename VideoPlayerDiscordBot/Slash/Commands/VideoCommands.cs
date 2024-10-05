@@ -32,27 +32,10 @@ namespace VideoPlayerDiscordBot.Slash.Commands
             string filename = match.Groups[1].Value;
 
             string filelocation = Path.Combine(Program.downloadPath ,filename);
-            string result = await _downloadService.DownloadVideo(filelocation);
-            Process ytdlp = new();
-            ytdlp.StartInfo.FileName = "yt-dlp";
+            string result = await _downloadService.DownloadVideo(filelocation, args);
             
-            ytdlp.StartInfo.Arguments = $"{args} -o {filelocation}";
-
-            ytdlp.StartInfo.UseShellExecute = false;
-            ytdlp.StartInfo.CreateNoWindow = true; 
-
-            ytdlp.OutputDataReceived += (sender, e) => Console.WriteLine(e.Data);
-            ytdlp.ErrorDataReceived += (sender, e) => Console.WriteLine(e.Data);
-
-            try
-            {
-                ytdlp.Start();
-                await command.RespondAsync("Video started");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"An error occurred: {ex.Message}");
-            }
+            await command.RespondAsync("Video started");
+            Console.WriteLine(result);
         }
     }
 }
