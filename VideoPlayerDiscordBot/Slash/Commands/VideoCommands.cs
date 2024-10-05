@@ -6,11 +6,13 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using VideoPlayerDiscordBot.Service;
 
 namespace VideoPlayerDiscordBot.Slash.Commands
 {
-    public class VideoCommands : IVideoCommands
+    public class VideoCommands(IDownloadService downloadService) : IVideoCommands
     {
+        public IDownloadService _downloadService = downloadService;
 
         public async Task AddVideo(SocketSlashCommand command)
         {
@@ -30,27 +32,10 @@ namespace VideoPlayerDiscordBot.Slash.Commands
             string filename = match.Groups[1].Value;
 
             string filelocation = Path.Combine(Program.downloadPath ,filename);
-
-            Process ytdlp = new();
-            ytdlp.StartInfo.FileName = "yt-dlp";
+            string result = await _downloadService.DownloadVideo(filelocation, args);
             
-            ytdlp.StartInfo.Arguments = $"{args} -o {filelocation}";
-
-            ytdlp.StartInfo.UseShellExecute = false;
-            ytdlp.StartInfo.CreateNoWindow = true; 
-
-            ytdlp.OutputDataReceived += (sender, e) => Console.WriteLine(e.Data);
-            ytdlp.ErrorDataReceived += (sender, e) => Console.WriteLine(e.Data);
-
-            try
-            {
-                ytdlp.Start();
-                await command.RespondAsync("Video started");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"An error occurred: {ex.Message}");
-            }
+            await command.RespondAsync("Video started");
+            Console.WriteLine(result);
         }
     }
 }

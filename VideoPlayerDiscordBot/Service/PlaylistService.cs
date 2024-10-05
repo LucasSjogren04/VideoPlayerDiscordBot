@@ -10,6 +10,5 @@ namespace VideoPlayerDiscordBot.Service
     public class PlaylistService
     {
         public List<Video>? PlayList { get; set; }
-
     }
 }
