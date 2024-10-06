@@ -9,12 +9,12 @@ namespace VideoPlayerDiscordBot.Service
 {
     public class DownloadService : IDownloadService
     {
-        public async Task<string> DownloadVideo(string path, string args)
+        public async Task<string> DownloadVideo(string folderPath, string args, string fileName)
         {
             Process ytdlp = new();
             ytdlp.StartInfo.FileName = "yt-dlp";
             
-            ytdlp.StartInfo.Arguments = $"{args} -o {path} --max-filesize {Program.maxFileSize}";
+            ytdlp.StartInfo.Arguments = $"{args} -o {fileName} --max-filesize {Program.maxFileSize}M";
 
             ytdlp.StartInfo.UseShellExecute = false;
             ytdlp.StartInfo.CreateNoWindow = true; 
@@ -29,6 +29,15 @@ namespace VideoPlayerDiscordBot.Service
             {
                 Console.WriteLine($"An error occurred: {ex.Message}");
             }
+            while (ytdlp.HasExited == false){
+                Thread.Sleep(100);
+            }
+            if(ytdlp.ExitCode != 0)
+            {
+                Console.WriteLine("An error occured while downloading the video");
+                return "Error";
+            }
+            
             return "okay..";
         }
     }
