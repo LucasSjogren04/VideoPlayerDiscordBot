@@ -2,6 +2,6 @@ namespace VideoPlayerDiscordBot.Service
 {
     public interface IDownloadService 
     {
-        Task<string> DownloadVideo(string path, string args);
+        Task<string> DownloadVideo(string folderPath, string args, string fileName);
     }
 }

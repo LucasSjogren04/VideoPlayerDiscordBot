@@ -29,13 +29,15 @@ namespace VideoPlayerDiscordBot.Slash.Commands
             {
                 await command.RespondAsync($"{args} is not a valid link.");
             }
-            string filename = match.Groups[1].Value;
-
-            string filelocation = Path.Combine(Program.downloadPath ,filename);
-            string result = await _downloadService.DownloadVideo(filelocation, args);
+            string fileName = match.Groups[1].Value;
+            string filelocation = Path.Combine(Program.downloadPath ,fileName);
+            Directory.CreateDirectory(filelocation);
+            fileName = Path.Combine(filelocation, fileName);
+            
             await command.DeferAsync();
-            await command.FollowupAsync("Niahu");
-            await command.RespondAsync("Video started");
+            
+            string result = await _downloadService.DownloadVideo(filelocation, args, fileName);
+            await command.FollowupAsync(result);
             Console.WriteLine(result);
         }
     }
