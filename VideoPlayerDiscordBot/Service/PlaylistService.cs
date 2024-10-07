@@ -10,34 +10,45 @@ namespace VideoPlayerDiscordBot.Service
 {
     public class PlaylistService : IPlaylistService
     {
-        public List<Video>? PlayList { get; set; }
-        public string AddVideoToPlayList(string pathToVideo)
+        public List<Video>? Playlist { get; set; }
+        public string AddVideoToPlayList(string fileName)
         {
-            return "";
+            Video video = new()
+            {
+                Location = fileName,
+                Playing = false
+            };
+            if (Playlist != null)
+            {
+                Playlist.Add(video);
+            }
+            else
+            {
+                Playlist = [new Video { Location = fileName }];
+            }
+            return "Video added";
         }
         public async Task<string> CheckPlayList()
         {
-            Task task = Task.Run(async () =>
+            while (true)
             {
-                while (true)
+                if (Playlist == null || Playlist.Count < 1)
                 {
-                    if (PlayList == null)
-                    {
-                        await Task.Delay(100);
-                    }
-                    else if (PlayList.Count() < 1)
-                    {
-                        await Task.Delay(100);
-                    } else {
-                        
-                    }
-
+                    await Task.Delay(100);
                 }
-            });
+                else
+                {
+                    return "A video exists in the play list";
+                }
+            }
         }
-        public string StartVideo(string folder)
+        public async Task<string> StartVideo()
         {
-            string[] files = Directory.GetFiles(folder);
+            if (Playlist == null || Playlist.Count < 1)
+            {
+                return "Error";
+            }
+            string[] files = Directory.GetFiles(Playlist.First().Location);
             Process mpv = new();
             mpv.StartInfo.FileName = "mpv";
 
@@ -56,6 +67,10 @@ namespace VideoPlayerDiscordBot.Service
             {
                 Console.WriteLine($"An error occurred: {ex.Message}");
             }
+            while (mpv.HasExited == false){
+                Thread.Sleep(100);
+            }
+            return "Video finnished";
         }
 
     }
