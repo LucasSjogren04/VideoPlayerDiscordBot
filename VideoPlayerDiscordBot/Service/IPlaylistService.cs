@@ -2,8 +2,8 @@ namespace VideoPlayerDiscordBot.Service
 {
     public interface IPlaylistService
     {
-        string AddVideoToPlayList(string pathToVideo);
+        string AddVideoToPlayList(string fileName);
         Task<string> CheckPlayList();
-        string StartVideo(string folder);
+        Task<string> StartVideo();
     }
 }

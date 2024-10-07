@@ -7,8 +7,9 @@ using System.Threading.Tasks;
 
 namespace VideoPlayerDiscordBot.Service
 {
-    public class DownloadService : IDownloadService
+    public class DownloadService (IPlaylistService playlistService) : IDownloadService
     {
+        public IPlaylistService _playlistService = playlistService;
         public async Task<string> DownloadVideo(string folderPath, string args, string fileName)
         {
             Process ytdlp = new();
@@ -37,7 +38,11 @@ namespace VideoPlayerDiscordBot.Service
                 Console.WriteLine("An error occured while downloading the video");
                 return "Error";
             }
-            
+            _playlistService.AddVideoToPlayList(folderPath);
+            string result = await _playlistService.CheckPlayList();
+            if(result != "Error"){
+                await _playlistService.StartVideo();
+            }
             return "okay..";
         }
     }
