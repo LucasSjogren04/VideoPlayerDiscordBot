@@ -38,7 +38,8 @@ namespace VideoPlayerDiscordBot.Service
                 }
                 else
                 {
-                    return "A video exists in the play list";
+                    Playlist.First().Playing = true;
+                    return "";
                 }
             }
         }
@@ -70,6 +71,7 @@ namespace VideoPlayerDiscordBot.Service
             while (mpv.HasExited == false){
                 Thread.Sleep(100);
             }
+            Playlist.Remove(Playlist.Where(v => v.Playing == true).First());
             return "Video finnished";
         }
 
