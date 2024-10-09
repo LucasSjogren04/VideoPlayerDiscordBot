@@ -40,6 +40,7 @@ namespace VideoPlayerDiscordBot.Service
             }
             _playlistService.AddVideoToPlayList(folderPath);
             string result = await _playlistService.CheckPlayList();
+            Console.WriteLine(result);
             if(result != "Error"){
                 await _playlistService.StartVideo();
             }
