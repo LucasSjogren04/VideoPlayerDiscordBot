@@ -39,7 +39,7 @@ namespace VideoPlayerDiscordBot.Service
                 else
                 {
                     Playlist.First().Playing = true;
-                    return "";
+                    return "video found";
                 }
             }
         }
