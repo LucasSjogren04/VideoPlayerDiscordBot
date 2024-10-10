@@ -12,6 +12,7 @@ Dependencies:
 For the app to work it needs a "settings.txt" in the root of the application.
 
 Example settings.txt file:
+```
 token:exampletoken123
 guildId:123456789
 downloadPath:C:\Users\USERNAME\Videos
