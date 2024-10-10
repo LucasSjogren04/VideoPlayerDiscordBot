@@ -28,27 +28,48 @@ namespace VideoPlayerDiscordBot.Service
             }
             return "Video added";
         }
-        public async Task<string> CheckPlayList()
+        public void CheckPlayList()
         {
             while (true)
             {
                 if (Playlist == null || Playlist.Count < 1)
                 {
-                    await Task.Delay(100);
+                    Thread.Sleep(100);
                 }
-                else
+                else if(Playlist.Where(v => v.Playing == true).FirstOrDefault() != null)
                 {
-                    Playlist.First().Playing = true;
-                    return "video found";
+                    Thread.Sleep(100);
+                }
+                {
+                    StartVideo();
                 }
             }
         }
-        public async Task<string> StartVideo()
+        public void StartVideo()
         {
-            if (Playlist == null || Playlist.Count < 1)
+             if (Playlist == null || Playlist.Count < 1)
             {
-                return "Error";
+                Console.WriteLine("Play list empty");
+                return;
             }
+
+            Process[] processes = Process.GetProcesses();
+            Process? process = processes.Where(p => p.ProcessName == "mpv").FirstOrDefault();
+            if (process != null)
+            {
+                return;
+            }
+            else
+            {
+                if (Playlist.First().Playing == true)
+                {
+                    Playlist.Remove(Playlist.First());
+                    return;
+                }
+                Playlist.First().Playing = true;
+            }
+
+
             string[] files = Directory.GetFiles(Playlist.First().Location);
             Process mpv = new();
             mpv.StartInfo.FileName = "mpv";
@@ -67,13 +88,7 @@ namespace VideoPlayerDiscordBot.Service
             catch (Exception ex)
             {
                 Console.WriteLine($"An error occurred: {ex.Message}");
-            }
-            while (mpv.HasExited == false){
-                Thread.Sleep(100);
-            }
-            Playlist.Remove(Playlist.Where(v => v.Playing == true).First());
-            return "Video finnished";
+            }    
         }
-
     }
 }

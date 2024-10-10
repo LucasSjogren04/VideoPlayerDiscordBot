@@ -10,7 +10,7 @@ namespace VideoPlayerDiscordBot.Service
     public class DownloadService (IPlaylistService playlistService) : IDownloadService
     {
         public IPlaylistService _playlistService = playlistService;
-        public async Task<string> DownloadVideo(string folderPath, string args, string fileName)
+        public string DownloadVideo(string folderPath, string args, string fileName)
         {
             Process ytdlp = new();
             ytdlp.StartInfo.FileName = "yt-dlp";
@@ -39,12 +39,8 @@ namespace VideoPlayerDiscordBot.Service
                 return "Error";
             }
             _playlistService.AddVideoToPlayList(folderPath);
-            string result = await _playlistService.CheckPlayList();
-            Console.WriteLine(result);
-            if(result != "Error"){
-                await _playlistService.StartVideo();
-            }
-            return "okay..";
+            Task.Run(() => _playlistService.CheckPlayList());
+            return "Video Added";
         }
     }
 }
