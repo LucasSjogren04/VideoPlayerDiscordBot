@@ -207,6 +207,7 @@ namespace VideoPlayerDiscordBot
             services.AddSingleton<IVideoCommands, VideoCommands>();
             services.AddScoped<IDownloadService, DownloadService>();
             services.AddSingleton<IPlaylistService, PlaylistService>();
+            services.AddScoped<IValidationService, ValidationService>();
         }
 
         public async Task RegisterCommandsAsync(DiscordSocketClient client, CommandService commands)
