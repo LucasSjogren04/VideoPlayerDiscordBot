@@ -2,7 +2,7 @@
 Commands to the app are done through a discord app (discord bot).
 
 Features:
-  Let your friends add youtube videos to a queue and have them automatically start playing.
+  Lets your friends add youtube videos to a queue and have them automatically start playing on the machine running the app.
 
 Dependencies:
   mpv
